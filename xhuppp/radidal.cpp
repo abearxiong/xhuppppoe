@@ -32,8 +32,9 @@ radidal::radidal()
 	lpentry->dwSize = sizeof(RASENTRY);
 	lpentry->dwFramingProtocol = RASFP_Ppp;
 	lpentry->dwfNetProtocols = RASNP_Ip | RASNP_Ipv6;
-	lpentry->dwfOptions = 0;// | RASEO_UseLogonCredentials;
+	lpentry->dwfOptions = 0| RASEO_RemoteDefaultGateway;// | RASEO_UseLogonCredentials;
 	lpentry->dwType = RASET_Broadband;
+	lpentry->dwfOptions2 = RASEO2_DontNegotiateMultilink;
 	dwError |= StringCchCopyN(lpentry->szDeviceName, RAS_MaxDeviceName, lpszdevicename, DEVICE_NAME_LENGTH);
 	dwError |= StringCchCopyN(lpentry->szDeviceType, RAS_MaxDeviceType, lpszdevicetype, DEVICE_TYPE_LENGTH);
 	if (dwError != S_OK) {
@@ -346,9 +347,10 @@ int radidal::getipinfo()
 			DWORD dwRet = ERROR_SUCCESS;
 			RASPPPIP rip;
 			rip.dwSize = sizeof(RASPPPIP);
+			
 			RASPPPIPV6 rip2;
 			rip2.dwSize = sizeof(RASPPPIPV6);
-			DWORD ll, ret;
+			DWORD ll;// , ret;
 
 			int dws = RasGetProjectionInfo(rasconn.hrasconn, RASP_PppIp, (LPVOID)&rip, (LPDWORD)&ll);
 			if (dws == ERROR_SUCCESS) {
@@ -514,12 +516,12 @@ radidal::~radidal()
 {
 	HeapFree(GetProcessHeap(), 0, lpentry);
 	HeapFree(GetProcessHeap(), 0, lpInfo);
-	if (hRasConn != NULL)
-	{
-		RasHangUp(hRasConn);
-		Sleep(2000);
-		hRasConn = NULL;
-	}
+	//if (hRasConn != NULL)
+	//{
+		//RasHangUp(hRasConn);
+	//	Sleep(2000);
+	//	hRasConn = NULL;
+	//}
 }
 
 //活动连接有的话设置flag
@@ -530,7 +532,7 @@ int pop::enum_conn()
 	DWORD dwRet = ERROR_SUCCESS;
 	DWORD dwConnections = 0;
 	LPRASCONN lpRasConn = NULL;
-	CHAR *temp;
+	//CHAR *temp;
 	// Call RasEnumConnections with lpRasConn = NULL. dwCb is returned with the required buffer size and 
 	// a return code of ERROR_BUFFER_TOO_SMALL
 	dwRet = RasEnumConnections(lpRasConn, &dwCb, &dwConnections);
